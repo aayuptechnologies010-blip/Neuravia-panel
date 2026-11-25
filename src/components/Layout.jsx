@@ -11,7 +11,11 @@ import {
   MdClose,
   MdShield,
   MdAccountCircle,
-  MdBarChart
+  MdBarChart,
+  MdCategory,
+  MdGavel,
+  MdCampaign,
+  MdPeople
 } from 'react-icons/md';
 import Swal from 'sweetalert2';
 
@@ -66,11 +70,15 @@ export default function Layout() {
 
   const navItems = [
     { label: 'Dashboard', path: '/', icon: MdDashboard },
-    { label: 'Reports & Analytics', path: '/reports', icon: MdBarChart },
     { label: 'Bookings', path: '/bookings', icon: MdEventNote },
+    { label: 'Specialities', path: '/specialities', icon: MdCategory },
+    { label: 'Legal & Policies', path: '/legal', icon: MdGavel },
+    { label: 'Announcements', path: '/announcements', icon: MdCampaign },
+    { label: 'Customers', path: '/customers', icon: MdPeople },
     { label: 'Therapists', path: '/therapists', icon: MdPsychology },
     { label: 'Enquiries', path: '/enquiries', icon: MdMailOutline },
     { label: 'Plans & Pricing', path: '/plans', icon: MdLocalOffer },
+    { label: 'Reports & Analytics', path: '/reports', icon: MdBarChart },
     { label: 'Admin Profile', path: '/profile', icon: MdAccountCircle }
   ];
 

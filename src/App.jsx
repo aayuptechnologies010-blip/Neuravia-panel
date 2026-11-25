@@ -7,6 +7,11 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Bookings from './pages/Bookings';
 import Therapists from './pages/Therapists';
+import TherapistAnalytics from './pages/TherapistAnalytics';
+import LegalPages from './pages/LegalPages';
+import Announcements from './pages/Announcements';
+import Customers from './pages/Customers';
+import Specialities from './pages/Specialities';
 import Enquiries from './pages/Enquiries';
 import Plans from './pages/Plans';
 import Profile from './pages/Profile';
@@ -41,8 +46,13 @@ export default function App() {
           <Route path="reports" element={<Reports />} />
           <Route path="bookings" element={<Bookings />} />
           <Route path="therapists" element={<Therapists />} />
+          <Route path="therapists/:id/analytics" element={<TherapistAnalytics />} />
+          <Route path="specialities" element={<Specialities />} />
           <Route path="enquiries" element={<Enquiries />} />
           <Route path="plans" element={<Plans />} />
+          <Route path="legal" element={<LegalPages />} />
+          <Route path="announcements" element={<Announcements />} />
+          <Route path="customers" element={<Customers />} />
           <Route path="profile" element={<Profile />} />
         </Route>
 

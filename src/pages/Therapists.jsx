@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import API from '../api/client';
 import { TableSkeleton } from '../components/SkeletonLoader';
 import toast from 'react-hot-toast';
@@ -26,29 +27,30 @@ import {
 } from 'react-icons/md';
 
 const initialTherapistState = {
-  profilePhoto: 'https://images.unsplash.com/photo-1594824813637-8e6f14ddbd66?auto=format&fit=crop&w=600&q=80',
-  name: 'Dr. Priya Sharma',
-  title: 'Clinical Psychologist / Therapist',
-  specialization: 'Anxiety, Stress & Relationship Therapy',
-  experience: '6+ Years',
-  qualification: 'M.A. Psychology, M.Phil Clinical Psychology',
-  languages: 'Hindi, English',
+  profilePhoto: '',
+  name: '',
+  title: '',
+  specialization: '',
+  experience: '',
+  qualification: '',
+  languages: '',
   sessionMode: 'Online / In-Person / Both',
-  about: 'Dedicated clinical psychologist with over 6 years of experience helping individuals and couples navigate emotional distress, anxiety cycles, and life transitions with compassionate evidence-based care.',
-  treats: 'Anxiety, Stress, Depression, Relationship Issues',
-  ageGroups: 'Teenagers, Adults, Couples',
-  therapyMethods: 'CBT, Mindfulness, Counseling',
-  sessionDuration: '45–60 Minutes',
-  availability: 'Mon–Sat, 10 AM–8 PM',
-  startingPrice: '₹499/session',
-  rating: 4.8,
-  totalSessions: '500+ Sessions Completed',
+  about: '',
+  treats: '',
+  ageGroups: '',
+  therapyMethods: '',
+  sessionDuration: '',
+  availability: '',
+  startingPrice: '',
+  rating: '',
+  totalSessions: '',
   isVerified: true,
   verifiedBadge: 'Neuravia Verified',
   isActive: true
 };
 
 export default function Therapists() {
+  const navigate = useNavigate();
   const [therapists, setTherapists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -61,6 +63,7 @@ export default function Therapists() {
   const [formData, setFormData] = useState(initialTherapistState);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
+  const [availableSpecialities, setAvailableSpecialities] = useState([]);
 
   const fileInputRef = useRef(null);
 
@@ -75,7 +78,34 @@ export default function Therapists() {
 
   useEffect(() => {
     fetchTherapists();
+    fetchSpecialities();
   }, []);
+
+  const handleApproveTherapist = async (t) => {
+    try {
+      const res = await API.put(`/therapists/${t._id}`, {
+        isActive: true,
+        isVerified: true
+      });
+      if (res.data?.success) {
+        toast.success(`${t.name} verified & approved!`);
+        fetchTherapists();
+      }
+    } catch (err) {
+      toast.error('Failed to approve therapist');
+    }
+  };
+
+  const fetchSpecialities = async () => {
+    try {
+      const res = await API.get('/specialities');
+      if (res.data?.success) {
+        setAvailableSpecialities(res.data.data || []);
+      }
+    } catch (err) {
+      console.error('Failed to load specialities', err);
+    }
+  };
 
   const fetchTherapists = async () => {
     try {
@@ -355,8 +385,8 @@ export default function Therapists() {
       ) : (
         <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead className="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider border-b border-slate-200 whitespace-nowrap">
                 <tr>
                   <th className="py-3.5 px-5">Therapist &amp; Verified Badge</th>
                   <th className="py-3.5 px-5">Specialization &amp; Qualification</th>
@@ -449,9 +479,18 @@ export default function Therapists() {
 
                     {/* Column 6: Actions */}
                     <td className="py-4 px-5 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                      <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
+                      {!t.isActive && (
                         <button
-                          onClick={() => openPreviewModal(t)}
+                          onClick={() => handleApproveTherapist(t)}
+                          className="px-2.5 py-1.5 text-xs font-bold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+                          title="Verify & Approve"
+                        >
+                          Approve
+                        </button>
+                      )}
+                        <button
+                          onClick={() => navigate(`/therapists/${t._id}/analytics`)}
                           className="p-2 text-slate-600 hover:text-[#00839a] bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
                           title="View Full Profile Details"
                         >
@@ -571,7 +610,7 @@ export default function Therapists() {
                         type="text"
                         value={formData.profilePhoto}
                         onChange={(e) => setFormData({ ...formData, profilePhoto: e.target.value })}
-                        placeholder="https://images.unsplash.com/... or paste image URL"
+                        placeholder="Enter image URL"
                         className="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-[#00839a]"
                       />
                       <div className="flex items-center gap-3">
@@ -604,7 +643,7 @@ export default function Therapists() {
                         type="text"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="e.g. Dr. Priya Sharma"
+                        placeholder="Enter full name"
                         required
                         className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#00839a] focus:bg-white"
                       />
@@ -618,7 +657,7 @@ export default function Therapists() {
                         type="text"
                         value={formData.title}
                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                        placeholder="e.g. Clinical Psychologist / Therapist"
+                        placeholder="Enter professional title"
                         required
                         className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#00839a] focus:bg-white"
                       />
@@ -626,15 +665,42 @@ export default function Therapists() {
 
                     <div>
                       <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                        4. Specialization
+                        4. Specialities (Multi-select Required *)
                       </label>
-                      <input
-                        type="text"
-                        value={formData.specialization}
-                        onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
-                        placeholder="e.g. Anxiety, Stress & Relationship Therapy"
-                        className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#00839a] focus:bg-white"
-                      />
+                      {availableSpecialities.length === 0 ? (
+                        <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800">
+                          No specialities found! Please add specialities from the <strong>Specialities</strong> page first before adding a therapist.
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                          {availableSpecialities.map((spec) => {
+                            const selectedList = (formData.specialization || '')
+                              .split(',')
+                              .map((s) => s.trim())
+                              .filter(Boolean);
+                            const isSelected = selectedList.includes(spec.name);
+                            return (
+                              <button
+                                key={spec._id}
+                                type="button"
+                                onClick={() => {
+                                  const next = isSelected
+                                    ? selectedList.filter((s) => s !== spec.name)
+                                    : [...selectedList, spec.name];
+                                  setFormData({ ...formData, specialization: next.join(', ') });
+                                }}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition ${
+                                  isSelected
+                                    ? 'bg-[#083058] text-white border-[#083058]'
+                                    : 'bg-white text-slate-700 border-slate-200 hover:border-[#00839a]'
+                                }`}
+                              >
+                                {spec.icon || '🧠'} {spec.name}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -645,7 +711,7 @@ export default function Therapists() {
                         type="text"
                         value={formData.experience}
                         onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
-                        placeholder="e.g. 6+ Years"
+                        placeholder="Enter experience"
                         className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#00839a] focus:bg-white"
                       />
                     </div>
@@ -684,7 +750,7 @@ export default function Therapists() {
                       type="text"
                       value={formData.qualification}
                       onChange={(e) => setFormData({ ...formData, qualification: e.target.value })}
-                      placeholder="e.g. M.A. Psychology, M.Phil Clinical Psychology"
+                      placeholder="Enter qualification"
                       className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#00839a] focus:bg-white"
                     />
                   </div>
@@ -697,7 +763,7 @@ export default function Therapists() {
                       type="text"
                       value={formData.languages}
                       onChange={(e) => setFormData({ ...formData, languages: e.target.value })}
-                      placeholder="e.g. Hindi, English"
+                      placeholder="Enter languages"
                       className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#00839a] focus:bg-white"
                     />
                   </div>
@@ -710,7 +776,7 @@ export default function Therapists() {
                       type="text"
                       value={formData.treats}
                       onChange={(e) => setFormData({ ...formData, treats: e.target.value })}
-                      placeholder="e.g. Anxiety, Stress, Depression, Relationship Issues"
+                      placeholder="Enter expertise / treats"
                       className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#00839a] focus:bg-white"
                     />
                   </div>
@@ -724,7 +790,7 @@ export default function Therapists() {
                         type="text"
                         value={formData.ageGroups}
                         onChange={(e) => setFormData({ ...formData, ageGroups: e.target.value })}
-                        placeholder="e.g. Teenagers, Adults, Couples"
+                        placeholder="Enter age groups"
                         className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#00839a] focus:bg-white"
                       />
                     </div>
@@ -737,7 +803,7 @@ export default function Therapists() {
                         type="text"
                         value={formData.therapyMethods}
                         onChange={(e) => setFormData({ ...formData, therapyMethods: e.target.value })}
-                        placeholder="e.g. CBT, Mindfulness, Counseling"
+                        placeholder="Enter therapy methods"
                         className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#00839a] focus:bg-white"
                       />
                     </div>
@@ -773,7 +839,7 @@ export default function Therapists() {
                         type="text"
                         value={formData.sessionDuration}
                         onChange={(e) => setFormData({ ...formData, sessionDuration: e.target.value })}
-                        placeholder="e.g. 45–60 Minutes"
+                        placeholder="Enter session duration"
                         className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#00839a] focus:bg-white"
                       />
                     </div>
@@ -786,7 +852,7 @@ export default function Therapists() {
                         type="text"
                         value={formData.availability}
                         onChange={(e) => setFormData({ ...formData, availability: e.target.value })}
-                        placeholder="e.g. Mon–Sat, 10 AM–8 PM"
+                        placeholder="Enter availability"
                         className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#00839a] focus:bg-white"
                       />
                     </div>
@@ -799,7 +865,7 @@ export default function Therapists() {
                         type="text"
                         value={formData.startingPrice}
                         onChange={(e) => setFormData({ ...formData, startingPrice: e.target.value })}
-                        placeholder="e.g. ₹499/session"
+                        placeholder="Enter starting price"
                         className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#00839a] focus:bg-white"
                       />
                     </div>
@@ -815,7 +881,7 @@ export default function Therapists() {
                         max="5"
                         value={formData.rating}
                         onChange={(e) => setFormData({ ...formData, rating: parseFloat(e.target.value) || 4.8 })}
-                        placeholder="4.8"
+                        placeholder="Enter rating"
                         className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#00839a] focus:bg-white"
                       />
                     </div>
@@ -828,7 +894,7 @@ export default function Therapists() {
                         type="text"
                         value={formData.totalSessions}
                         onChange={(e) => setFormData({ ...formData, totalSessions: e.target.value })}
-                        placeholder="e.g. 500+ Sessions Completed"
+                        placeholder="Enter sessions completed"
                         className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#00839a] focus:bg-white"
                       />
                     </div>
@@ -842,7 +908,7 @@ export default function Therapists() {
                       rows={4}
                       value={formData.about}
                       onChange={(e) => setFormData({ ...formData, about: e.target.value })}
-                      placeholder="Dedicated clinical psychologist with expertise in anxiety, stress and relationship therapy..."
+                      placeholder="Enter bio / about therapist"
                       className="w-full p-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#00839a] focus:bg-white resize-none"
                     />
                   </div>
